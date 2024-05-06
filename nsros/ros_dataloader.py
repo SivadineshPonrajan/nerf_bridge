@@ -29,7 +29,6 @@ import rospy
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import PoseStamped, PoseArray
 from message_filters import ApproximateTimeSynchronizer, Subscriber
-from cv_bridge import CvBridge
 
 
 CONSOLE = Console(width=120)
