@@ -11,6 +11,9 @@ import time
 import warnings
 from typing import Union
 
+import os
+import json
+
 import numpy as np
 import scipy.spatial.transform as transform
 from rich.console import Console
@@ -183,6 +186,22 @@ class ROSDataloader(DataLoader):
                 self.posearray_pub.publish(pa)
 
             self.dataset.updated_indices.append(self.current_idx)
+
+            file_path = 'saved_poses.json'
+            # Check if file not exists
+            if not os.path.exists(file_path):
+                print("*** ERROR: Check the saved_poses file creation in ros_dataparser.py ***")
+                exit(1)
+            curr_pose_list = [pose.pose.position.x, pose.pose.position.y, pose.pose.position.z, pose.pose.orientation.x, pose.pose.orientation.y, pose.pose.orientation.z, pose.pose.orientation.w]
+            c2w_list = c2w.tolist()
+            c2w_list.append([0.0, 0.0, 0.0, 1.0])
+            # Open the existing file, read data and append new frame
+            with open(file_path, 'r') as file:
+                data = json.load(file)
+            new_frame = {"idx": self.current_idx, "pose": curr_pose_list, "transform_matrix": c2w_list}
+            data["frames"].append(new_frame)
+            with open(file_path ,'w') as file:
+                json.dump(data, file, indent=4)
 
             self.updated = True
             self.current_idx += 1

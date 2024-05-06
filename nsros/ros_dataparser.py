@@ -5,6 +5,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Type
 
+import os
+import json
+
 import torch
 
 from nerfstudio.cameras.cameras import Cameras, CameraType
@@ -42,6 +45,26 @@ class ROSDataParser(DataParser):
         self.data: Path = config.data
         self.scale_factor: float = config.scale_factor
         self.aabb = config.aabb_scale
+        meta = load_from_json(self.data)
+        file_path = 'saved_poses.json'
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        conv = {}
+        conv["fl_x"] = meta["fx"]
+        conv["fl_y"] = meta["fy"]
+        conv["k1"] = meta["k1"]
+        conv["k2"] = meta["k2"]
+        conv["p1"] = meta["p1"]
+        conv["p2"] = meta["p1"]
+        conv["cx"] = meta["cx"]
+        conv["cy"] = meta["cy"]
+        conv["w"] = meta["W"]
+        conv["h"] = meta["H"]
+        conv["aabb_scale"] = self.aabb
+        conv["frames"] = []
+        conv["ply_file_path"] = "spase_pc.ply"
+        with open(file_path, 'w') as file:
+            json.dump(conv, file, indent=4)
 
     def get_dataparser_outputs(self, split="train", num_images: int = 500):
         dataparser_outputs = self._generate_dataparser_outputs(split, num_images)
