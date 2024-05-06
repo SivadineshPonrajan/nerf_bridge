@@ -25,7 +25,8 @@ from nsros.ros_dataset import ROSDataset
 import rospy
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import PoseStamped, PoseArray
-from message_filters import TimeSynchronizer, Subscriber
+from message_filters import ApproximateTimeSynchronizer, Subscriber
+from cv_bridge import CvBridge
 
 
 CONSOLE = Console(width=120)
@@ -93,6 +94,7 @@ class ROSDataloader(DataLoader):
         dataset: ROSDataset,
         publish_posearray: bool,
         data_update_freq: float,
+        topic_slop: float,
         device: Union[torch.device, str] = "cpu",
         **kwargs,
     ):
@@ -133,7 +135,7 @@ class ROSDataloader(DataLoader):
         rospy.init_node("nsros_dataloader", anonymous=True)
         self.image_sub = Subscriber(self.dataset.image_topic_name, Image)
         self.pose_sub = Subscriber(self.dataset.pose_topic_name, PoseStamped)
-        self.ts = TimeSynchronizer([self.image_sub, self.pose_sub], 10)
+        self.ts = ApproximateTimeSynchronizer([self.image_sub, self.pose_sub], 10, topic_slop)
         self.ts.registerCallback(self.ts_image_pose_callback)
         self.posearray_pub = rospy.Publisher("training_poses", PoseArray, queue_size=1)
 

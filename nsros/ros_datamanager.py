@@ -32,6 +32,7 @@ class ROSDataManagerConfig(base_datamanager.VanillaDataManagerConfig):
     """ Frequency, in Hz, that images are added to the training dataset tensor. """
     num_training_images: int = 500
     """ Number of images to train on (for dataset tensor pre-allocation). """
+    topic_slop: float = 0.05
 
 
 class ROSDataManager(
